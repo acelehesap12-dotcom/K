@@ -31,6 +31,7 @@
     "node-vault": "^0.9.20",
     "redis": "^4.6.12",
     "axios": "^1.6.2",
+    "ws": "^8.16.0",
     "zod": "^3.22.4",
     "pino": "^8.17.2",
     "prom-client": "^15.0.0",
@@ -38,7 +39,7 @@
     "bignumber.js": "^9.1.2",
     "decimal.js": "^10.4.3",
     "web3": "^4.2.1",
-    "solders": "^0.18.1",
+    "@solana/web3.js": "^1.87.6",
     "tronweb": "^4.4.0"
   },
   "devDependencies": {
@@ -48,6 +49,7 @@
     "@vitest/coverage-v8": "^1.1.0",
     "tsx": "^4.7.0",
     "@types/node": "^20.10.5",
+    "@types/ws": "^8.5.10",
     "eslint": "^8.56.0",
     "@typescript-eslint/eslint-plugin": "^6.17.0",
     "prettier": "^3.1.1"

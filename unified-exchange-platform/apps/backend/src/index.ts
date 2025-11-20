@@ -3,10 +3,12 @@ import cors from '@fastify/cors';
 import helmet from '@fastify/helmet';
 import jwt from '@fastify/jwt';
 import rateLimit from '@fastify/rate-limit';
+import websocket from '@fastify/websocket';
 import { logger } from './utils/logger.js';
 import { dbPool } from './db/connection.js';
 import { initVault } from './services/vault.js';
 import { initKafka } from './services/kafka.js';
+import { wsServer } from './services/websocket-server.js';
 import { errorHandler, ApiError } from './utils/errors.js';
 import { metricsMiddleware, metricsEndpoint, updateDatabaseMetrics } from './utils/metrics.js';
 import authRoutes from './routes/auth.js';
@@ -61,6 +63,13 @@ await fastify.register(rateLimit, {
   max: parseInt(process.env.RATE_LIMIT_REQUESTS || '1000'),
   timeWindow: process.env.RATE_LIMIT_WINDOW_MS || '1 minute',
 });
+
+// WebSocket support
+await fastify.register(websocket);
+
+// Initialize WebSocket server
+logger.info('Initializing WebSocket server...');
+await wsServer.initialize(fastify);
 
 // Health check
 fastify.get('/health', async (request, reply) => {

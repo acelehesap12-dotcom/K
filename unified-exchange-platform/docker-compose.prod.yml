@@ -1,0 +1,220 @@
+services:
+  # ============ VAULT ============
+  vault:
+    image: hashicorp/vault:1.15
+    container_name: exchange-vault-prod
+    restart: unless-stopped
+    ports:
+      - "8200:8200"
+    environment:
+      VAULT_ADDR: http://0.0.0.0:8200
+    cap_add:
+      - IPC_LOCK
+    volumes:
+      - vault-data:/vault/data
+      - ./infra/vault/config.hcl:/vault/config/config.hcl
+    command: server
+    healthcheck:
+      test: ["CMD", "vault", "status"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ============ PostgreSQL ============
+  postgres:
+    image: postgres:16-alpine
+    container_name: exchange-postgres-prod
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-exchange_db}
+      POSTGRES_USER: ${POSTGRES_USER:-exchange_user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-change_this_in_production}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      - ./infra/postgres/init.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-exchange_user}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ============ TimescaleDB ============
+  timescaledb:
+    image: timescale/timescaledb:latest-pg16
+    container_name: exchange-timescaledb-prod
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${TIMESCALE_DB:-timeseries_db}
+      POSTGRES_USER: ${POSTGRES_USER:-exchange_user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-change_this_in_production}
+    ports:
+      - "5433:5432"
+    volumes:
+      - timescaledb-data:/var/lib/postgresql/data
+
+  # ============ Redis ============
+  redis:
+    image: redis:7-alpine
+    container_name: exchange-redis-prod
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    command: redis-server --appendonly yes --requirepass ${REDIS_PASSWORD:-change_this_password}
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ============ BACKEND API ============
+  backend:
+    build:
+      context: ./apps/backend
+      dockerfile: Dockerfile
+    container_name: exchange-backend-prod
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+      DATABASE_URL: postgresql://${POSTGRES_USER:-exchange_user}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-exchange_db}
+      REDIS_URL: redis://:${REDIS_PASSWORD}@redis:6379
+      JWT_SECRET: ${JWT_SECRET:-change_this_secret_key}
+      VAULT_ADDR: http://vault:8200
+      VAULT_TOKEN: ${VAULT_TOKEN}
+      KAFKA_BROKERS: kafka:9092
+      BINANCE_API_KEY: ${BINANCE_API_KEY}
+      BINANCE_API_SECRET: ${BINANCE_API_SECRET}
+      POLYGON_API_KEY: ${POLYGON_API_KEY}
+      ALCHEMY_API_KEY: ${ALCHEMY_API_KEY}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      vault:
+        condition: service_healthy
+      kafka:
+        condition: service_started
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # ============ FRONTEND ============
+  frontend:
+    build:
+      context: ./apps/web
+      dockerfile: Dockerfile
+      args:
+        VITE_API_URL: ${VITE_API_URL:-http://localhost:3000}
+        VITE_WS_URL: ${VITE_WS_URL:-ws://localhost:3000}
+    container_name: exchange-frontend-prod
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    depends_on:
+      - backend
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/ssl:/etc/nginx/ssl:ro
+
+  # ============ NGINX (Reverse Proxy) ============
+  nginx:
+    image: nginx:alpine
+    container_name: exchange-nginx-prod
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/nginx-prod.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/ssl:/etc/nginx/ssl:ro
+      - nginx-cache:/var/cache/nginx
+    depends_on:
+      - backend
+      - frontend
+
+  # ============ KAFKA ============
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.6.0
+    container_name: exchange-zookeeper-prod
+    restart: unless-stopped
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_SYNC_LIMIT: 2
+    volumes:
+      - zookeeper-data:/var/lib/zookeeper/data
+
+  kafka:
+    image: confluentinc/cp-kafka:7.6.0
+    container_name: exchange-kafka-prod
+    restart: unless-stopped
+    depends_on:
+      - zookeeper
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
+    volumes:
+      - kafka-data:/var/lib/kafka/data
+
+  # ============ PROMETHEUS ============
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: exchange-prometheus-prod
+    restart: unless-stopped
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./infra/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus-data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--storage.tsdb.retention.time=30d'
+
+  # ============ GRAFANA ============
+  grafana:
+    image: grafana/grafana:latest
+    container_name: exchange-grafana-prod
+    restart: unless-stopped
+    ports:
+      - "3001:3000"
+    environment:
+      GF_SECURITY_ADMIN_USER: ${GRAFANA_USER:-admin}
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_PASSWORD:-change_this_password}
+      GF_SERVER_ROOT_URL: ${GRAFANA_URL:-http://localhost:3001}
+    volumes:
+      - grafana-data:/var/lib/grafana
+      - ./infra/grafana/dashboards:/etc/grafana/provisioning/dashboards:ro
+      - ./infra/grafana/datasources:/etc/grafana/provisioning/datasources:ro
+    depends_on:
+      - prometheus
+
+volumes:
+  postgres-data:
+  timescaledb-data:
+  redis-data:
+  vault-data:
+  kafka-data:
+  zookeeper-data:
+  prometheus-data:
+  grafana-data:
+  nginx-cache:
+
+networks:
+  default:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.25.0.0/16
