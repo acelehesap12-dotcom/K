@@ -1,0 +1,12 @@
+# KK99 Exchange Backend
+# Render.com için özel yapılandırma
+
+# Build Command:
+# cd unified-exchange-platform/apps/backend && npm install
+
+# Start Command:
+# cd unified-exchange-platform/apps/backend && npm start
+
+# Environment Variables:
+NODE_ENV=production
+PORT=10000

@@ -1,0 +1,26 @@
+services:
+  # Backend API
+  - type: web
+    name: kk99-backend
+    env: node
+    region: oregon
+    plan: free
+    buildCommand: cd unified-exchange-platform/apps/backend && npm install
+    startCommand: cd unified-exchange-platform/apps/backend && npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
+    
+  # Frontend (Optional)
+  - type: web
+    name: kk99-frontend
+    env: static
+    region: oregon
+    plan: free
+    buildCommand: cd unified-exchange-platform/apps/web && npm install && npm run build
+    staticPublishPath: unified-exchange-platform/apps/web/dist
+    envVars:
+      - key: VITE_API_URL
+        sync: false

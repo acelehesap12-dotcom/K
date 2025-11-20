@@ -1,0 +1,14 @@
+{
+  "name": "KK99 Exchange Backend",
+  "type": "web",
+  "env": "node",
+  "region": "oregon",
+  "plan": "free",
+  "buildCommand": "cd unified-exchange-platform/apps/backend && npm install",
+  "startCommand": "cd unified-exchange-platform/apps/backend && npm start",
+  "healthCheckPath": "/health",
+  "envVars": {
+    "NODE_ENV": "production",
+    "PORT": "10000"
+  }
+}
