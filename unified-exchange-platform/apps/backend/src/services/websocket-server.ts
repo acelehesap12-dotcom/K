@@ -16,7 +16,7 @@ class WebSocketServer {
 
   async initialize(fastify: FastifyInstance) {
     fastify.get('/ws/market/:symbol', { websocket: true }, (connection, req) => {
-      const { socket } = connection;
+      const socket = connection as any;
       const symbol = (req.params as any).symbol;
 
       logger.info(`WebSocket client connected for ${symbol}`);
@@ -58,9 +58,9 @@ class WebSocketServer {
       
       let price, change24h;
       if (isCrypto) {
-        const ticker = await binanceAPI.get24hTicker(symbol.replace('-', ''));
-        price = parseFloat(ticker.lastPrice);
-        change24h = parseFloat(ticker.priceChangePercent);
+        const ticker = await binanceAPI.get24hTicker(symbol.replace('-', '')) as any;
+        price = parseFloat(ticker.lastPrice || ticker.last || '0');
+        change24h = parseFloat(ticker.priceChangePercent || ticker.priceChange || '0');
       } else {
         const quote = await polygonAPI.getQuote(symbol);
         price = quote.price;
