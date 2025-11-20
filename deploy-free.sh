@@ -1,0 +1,42 @@
+#!/bin/bash
+
+echo "🆓 Netlify + Cyclic.sh Deployment (100% ÜCRETSİZ)"
+echo "================================================"
+echo ""
+
+# Frontend → Netlify
+echo "📦 1/2: Frontend build ediliyor..."
+cd /workspaces/K/unified-exchange-platform/apps/web
+npm run build
+
+echo ""
+echo "🌐 Netlify'a deploy için:"
+echo ""
+echo "Option A - CLI (Hızlı):"
+echo "  npm i -g netlify-cli"
+echo "  netlify login"
+echo "  netlify deploy --prod --dir=dist"
+echo ""
+echo "Option B - Dashboard (Daha kolay):"
+echo "  1. https://netlify.com → Sign up with GitHub"
+echo "  2. 'Add new site' → 'Import from Git'"
+echo "  3. Repo seç: acelehesap12-dotcom/K"
+echo "  4. Build ayarları:"
+echo "     Base: unified-exchange-platform/apps/web"
+echo "     Build: npm run build"
+echo "     Publish: dist"
+echo "  5. Deploy site!"
+echo ""
+echo "─────────────────────────────────────────────────"
+echo ""
+echo "🔧 2/2: Backend için Cyclic.sh:"
+echo ""
+echo "  1. https://cyclic.sh → Sign in with GitHub"
+echo "  2. 'Link Your Own' → Repo: K"
+echo "  3. Auto-detect Node.js"
+echo "  4. Deploy! (2 dakika)"
+echo ""
+echo "✅ Kredi kartı GEREKMİYOR!"
+echo "✅ Tamamen ÜCRETSİZ!"
+echo ""
+echo "📌 Alternatif backend: https://koyeb.com (aynı şekilde ücretsiz)"
