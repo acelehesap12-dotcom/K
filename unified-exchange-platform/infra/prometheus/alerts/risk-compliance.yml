@@ -1,0 +1,127 @@
+groups:
+  - name: kk99_risk_alerts
+    interval: 1m
+    rules:
+      # Circuit Breaker Alerts
+      - alert: CircuitBreakerTriggered
+        expr: circuit_breaker_triggered_total > 0
+        for: 1m
+        labels:
+          severity: critical
+          component: risk_management
+        annotations:
+          summary: "Circuit breaker triggered for {{ $labels.symbol }}"
+          description: "Trading halted due to {{ $labels.reason }}"
+
+      # Risk Management Alerts
+      - alert: HighPortfolioVaR
+        expr: portfolio_var_95_sum > 1000000
+        for: 5m
+        labels:
+          severity: warning
+          component: risk_management
+        annotations:
+          summary: "High portfolio VaR detected"
+          description: "Portfolio VaR at 95% confidence is ${{ $value }}"
+
+      - alert: CriticalPortfolioVaR
+        expr: portfolio_var_95_sum > 5000000
+        for: 2m
+        labels:
+          severity: critical
+          component: risk_management
+        annotations:
+          summary: "Critical portfolio VaR level"
+          description: "Portfolio VaR at 95% confidence is ${{ $value }}"
+
+      - alert: LiquidationWarning
+        expr: rate(liquidation_warnings_total{severity="HIGH"}[5m]) > 0
+        for: 1m
+        labels:
+          severity: critical
+          component: risk_management
+        annotations:
+          summary: "High liquidation risk detected"
+          description: "{{ $value }} high-severity liquidation warnings in last 5 minutes"
+
+      - alert: ExcessiveSlippage
+        expr: histogram_quantile(0.95, rate(slippage_percent_bucket[5m])) > 2.0
+        for: 5m
+        labels:
+          severity: warning
+          component: execution
+        annotations:
+          summary: "High slippage detected"
+          description: "p95 slippage is {{ $value }}%"
+
+      # Compliance Alerts
+      - alert: ComplianceViolation
+        expr: rate(compliance_violations_total[5m]) > 0
+        for: 1m
+        labels:
+          severity: critical
+          component: compliance
+        annotations:
+          summary: "Compliance violation detected"
+          description: "{{ $value }} violations detected in last 5 minutes"
+
+      - alert: AMLFlagDetected
+        expr: rate(aml_flags_total[5m]) > 0.1
+        for: 2m
+        labels:
+          severity: warning
+          component: compliance
+        annotations:
+          summary: "AML flags detected"
+          description: "{{ $value }} AML flags raised in last 5 minutes"
+
+      - alert: SanctionsListMatch
+        expr: sanctions_list_matches_total > 0
+        for: 1m
+        labels:
+          severity: critical
+          component: compliance
+        annotations:
+          summary: "Sanctions list match detected"
+          description: "User matched against sanctions list"
+
+      - alert: PositionLimitViolation
+        expr: rate(position_limit_violations_total[5m]) > 0
+        for: 1m
+        labels:
+          severity: warning
+          component: risk_management
+        annotations:
+          summary: "Position limit violation"
+          description: "{{ $value }} position limit violations for {{ $labels.symbol }}"
+
+      # Anomaly Detection Alerts
+      - alert: WashTradingDetected
+        expr: wash_trading_detected_total > 0
+        for: 1m
+        labels:
+          severity: critical
+          component: compliance
+        annotations:
+          summary: "Wash trading detected"
+          description: "Potential wash trading activity by user {{ $labels.user_id }}"
+
+      - alert: SpoofingDetected
+        expr: spoofing_detected_total > 0
+        for: 1m
+        labels:
+          severity: critical
+          component: compliance
+        annotations:
+          summary: "Spoofing detected"
+          description: "Potential spoofing activity detected"
+
+      - alert: RapidOrderCancellation
+        expr: rate(rapid_cancellation_detected_total[5m]) > 0.5
+        for: 2m
+        labels:
+          severity: warning
+          component: compliance
+        annotations:
+          summary: "Rapid order cancellation detected"
+          description: "{{ $value }} instances of rapid cancellation per second"

@@ -1,0 +1,118 @@
+groups:
+  - name: kk99_business_alerts
+    interval: 5m
+    rules:
+      # Trading Volume Alerts
+      - alert: LowTradingVolume
+        expr: rate(trades_executed_total[1h]) < 10
+        for: 30m
+        labels:
+          severity: warning
+          component: business
+        annotations:
+          summary: "Low trading volume detected"
+          description: "Trading rate is {{ $value }} trades/second"
+
+      - alert: NoTradingActivity
+        expr: rate(trades_executed_total[1h]) == 0
+        for: 15m
+        labels:
+          severity: critical
+          component: business
+        annotations:
+          summary: "No trading activity"
+          description: "No trades executed in last hour"
+
+      # Revenue Alerts
+      - alert: RevenueDropDetected
+        expr: |
+          (
+            sum(rate(fees_collected_usd[1h]))
+            /
+            sum(rate(fees_collected_usd[1h] offset 24h))
+          ) < 0.5
+        for: 30m
+        labels:
+          severity: warning
+          component: business
+        annotations:
+          summary: "Revenue drop detected"
+          description: "Revenue is {{ $value | humanizePercentage }} of previous day"
+
+      # User Activity Alerts
+      - alert: DroppingActiveUsers
+        expr: active_users_count < 100
+        for: 30m
+        labels:
+          severity: warning
+          component: business
+        annotations:
+          summary: "Low active user count"
+          description: "Only {{ $value }} active users"
+
+      - alert: WebSocketConnectionDrop
+        expr: |
+          (
+            connected_websockets_count
+            /
+            connected_websockets_count offset 1h
+          ) < 0.5
+        for: 15m
+        labels:
+          severity: warning
+          component: platform
+        annotations:
+          summary: "WebSocket connection drop"
+          description: "WebSocket connections dropped by {{ $value | humanizePercentage }}"
+
+      # KK99 Token Alerts
+      - alert: KK99BalanceAnomalyDetected
+        expr: |
+          abs(
+            kk99_total_balance_sum
+            -
+            kk99_total_balance_sum offset 1h
+          ) / kk99_total_balance_sum offset 1h > 0.1
+        for: 10m
+        labels:
+          severity: warning
+          component: business
+        annotations:
+          summary: "KK99 balance anomaly"
+          description: "Total KK99 balance changed by {{ $value | humanizePercentage }}"
+
+      # Deposit/Withdrawal Alerts
+      - alert: HighWithdrawalRate
+        expr: rate(withdrawals_processed_total[5m]) > rate(deposits_received_total[5m]) * 2
+        for: 30m
+        labels:
+          severity: warning
+          component: business
+        annotations:
+          summary: "High withdrawal rate"
+          description: "Withdrawals significantly exceed deposits"
+
+      - alert: DepositProcessingDelay
+        expr: deposit_processing_time_seconds > 300
+        for: 10m
+        labels:
+          severity: warning
+          component: blockchain
+        annotations:
+          summary: "Deposit processing delay"
+          description: "Deposit processing time is {{ $value }}s for {{ $labels.chain }}"
+
+      # Failed Transaction Alerts
+      - alert: HighWithdrawalFailureRate
+        expr: |
+          rate(withdrawals_failed_total[5m])
+          /
+          rate(withdrawals_processed_total[5m])
+          > 0.05
+        for: 10m
+        labels:
+          severity: warning
+          component: blockchain
+        annotations:
+          summary: "High withdrawal failure rate"
+          description: "{{ $value | humanizePercentage }} of withdrawals failing"

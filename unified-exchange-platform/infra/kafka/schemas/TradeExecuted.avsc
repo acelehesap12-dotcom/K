@@ -1,0 +1,18 @@
+{
+  "type": "record",
+  "namespace": "com.kk99.exchange",
+  "name": "TradeExecuted",
+  "fields": [
+    {"name": "tradeId", "type": "string"},
+    {"name": "buyOrderId", "type": "string"},
+    {"name": "sellOrderId", "type": "string"},
+    {"name": "buyerId", "type": "string"},
+    {"name": "sellerId", "type": "string"},
+    {"name": "symbol", "type": "string"},
+    {"name": "quantity", "type": "double"},
+    {"name": "price", "type": "double"},
+    {"name": "buyerFeeKK99", "type": "double"},
+    {"name": "sellerFeeKK99", "type": "double"},
+    {"name": "timestamp", "type": "long"}
+  ]
+}

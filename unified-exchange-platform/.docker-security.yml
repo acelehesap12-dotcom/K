@@ -1,0 +1,57 @@
+# Docker Security Scan Configuration
+version: 1.0
+
+# Security scanning settings
+scan:
+  # Severity levels to report (low, medium, high, critical)
+  severity_threshold: medium
+  
+  # Image scanning
+  images:
+    - name: kk99-backend
+      dockerfile: apps/backend/Dockerfile
+      scan_on_build: true
+      scan_on_push: true
+  
+  # Vulnerability scanning
+  vulnerability:
+    enabled: true
+    max_critical: 0
+    max_high: 0
+    max_medium: 5
+  
+  # Secret scanning
+  secrets:
+    enabled: true
+    patterns:
+      - "(?i)password"
+      - "(?i)secret"
+      - "(?i)api[_-]?key"
+      - "(?i)token"
+      - "private[_-]?key"
+  
+  # Base image validation
+  base_images:
+    allowed:
+      - "node:20.11.1-alpine3.19"
+      - "node:20.11.1-alpine3.18"
+    blocked:
+      - "node:latest"
+      - "node:20-alpine"  # Unpatched version
+  
+  # Compliance checks
+  compliance:
+    - CIS Docker Benchmark
+    - NIST SP 800-190
+  
+# Remediation suggestions
+remediation:
+  auto_update_base_image: false
+  create_issues: true
+  notify_security_team: true
+
+# Reporting
+reporting:
+  format: json
+  output: security-scan-results.json
+  upload_to_security_dashboard: true

@@ -1,0 +1,302 @@
+openapi: 3.0.0
+info:
+  title: KK99 Exchange API
+  version: 1.0.0
+  description: Production-ready Unified Exchange Platform API
+  contact:
+    name: KK99 Team
+    email: support@kk99.io
+servers:
+  - url: https://api.exchange.kk99.io/api/v1
+    description: Production
+  - url: http://localhost:3000/api/v1
+    description: Local development
+
+paths:
+  /auth/register:
+    post:
+      summary: Register new user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                username:
+                  type: string
+                password:
+                  type: string
+      responses:
+        '201':
+          description: User created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  user:
+                    $ref: '#/components/schemas/User'
+                  token:
+                    type: string
+
+  /auth/login:
+    post:
+      summary: Login user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                password:
+                  type: string
+      responses:
+        '200':
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  user:
+                    $ref: '#/components/schemas/User'
+                  token:
+                    type: string
+
+  /orders:
+    post:
+      summary: Create new order
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateOrderRequest'
+      responses:
+        '201':
+          description: Order created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Order'
+    get:
+      summary: Get user orders
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: User orders
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Order'
+
+  /trades:
+    get:
+      summary: Get user trades
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: User trades
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Trade'
+
+  /market/{symbol}:
+    get:
+      summary: Get market data for symbol
+      parameters:
+        - name: symbol
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Market data
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/MarketData'
+
+  /wallets:
+    get:
+      summary: Get user wallets
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: User wallets
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Wallet'
+    post:
+      summary: Add new wallet
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                walletAddress:
+                  type: string
+                chain:
+                  type: string
+                  enum: [ETH, SOL, TRX, BTC]
+      responses:
+        '201':
+          description: Wallet added
+
+  /wallets/deposit:
+    post:
+      summary: Record deposit transaction
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                walletId:
+                  type: string
+                transactionHash:
+                  type: string
+                amount:
+                  type: number
+                chain:
+                  type: string
+      responses:
+        '201':
+          description: Deposit recorded
+
+components:
+  schemas:
+    User:
+      type: object
+      properties:
+        id:
+          type: string
+        email:
+          type: string
+        username:
+          type: string
+        kk99_balance:
+          type: number
+        kyc_status:
+          type: string
+
+    Order:
+      type: object
+      properties:
+        id:
+          type: string
+        symbol:
+          type: string
+        side:
+          type: string
+          enum: [BUY, SELL]
+        quantity:
+          type: number
+        price:
+          type: number
+        status:
+          type: string
+        created_at:
+          type: string
+
+    Trade:
+      type: object
+      properties:
+        id:
+          type: string
+        symbol:
+          type: string
+        quantity:
+          type: number
+        price:
+          type: number
+        created_at:
+          type: string
+
+    MarketData:
+      type: object
+      properties:
+        timestamp:
+          type: number
+        symbol:
+          type: string
+        open:
+          type: number
+        high:
+          type: number
+        low:
+          type: number
+        close:
+          type: number
+        volume:
+          type: number
+
+    Wallet:
+      type: object
+      properties:
+        id:
+          type: string
+        wallet_address:
+          type: string
+        chain:
+          type: string
+        balance:
+          type: number
+        verified:
+          type: boolean
+
+    CreateOrderRequest:
+      type: object
+      required:
+        - symbol
+        - side
+        - orderType
+        - quantity
+      properties:
+        symbol:
+          type: string
+        side:
+          type: string
+          enum: [BUY, SELL]
+        orderType:
+          type: string
+          enum: [LIMIT, MARKET]
+        quantity:
+          type: number
+        price:
+          type: number
+
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT

@@ -1,0 +1,16 @@
+{
+  "type": "record",
+  "namespace": "com.kk99.exchange",
+  "name": "OrderCreated",
+  "fields": [
+    {"name": "orderId", "type": "string"},
+    {"name": "userId", "type": "string"},
+    {"name": "symbol", "type": "string"},
+    {"name": "side", "type": {"type": "enum", "name": "OrderSide", "symbols": ["BUY", "SELL"]}},
+    {"name": "orderType", "type": "string"},
+    {"name": "quantity", "type": "double"},
+    {"name": "price", "type": ["null", "double"]},
+    {"name": "timeInForce", "type": "string"},
+    {"name": "createdAt", "type": "long"}
+  ]
+}

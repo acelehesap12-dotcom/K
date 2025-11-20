@@ -1,0 +1,147 @@
+{
+  "dashboard": {
+    "title": "KK99 Exchange - Risk Management",
+    "tags": ["kk99", "risk", "compliance"],
+    "timezone": "browser",
+    "panels": [
+      {
+        "id": 1,
+        "title": "Portfolio VaR (95%)",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "portfolio_var_95_sum",
+            "legendFormat": "Total VaR"
+          }
+        ],
+        "gridPos": { "h": 8, "w": 12, "x": 0, "y": 0 },
+        "alert": {
+          "conditions": [
+            {
+              "evaluator": {
+                "params": [1000000],
+                "type": "gt"
+              },
+              "query": {
+                "params": ["A", "5m", "now"]
+              },
+              "reducer": {
+                "type": "avg"
+              },
+              "type": "query"
+            }
+          ],
+          "frequency": "5m",
+          "handler": 1,
+          "message": "Portfolio VaR exceeds $1M threshold",
+          "name": "High VaR Alert"
+        }
+      },
+      {
+        "id": 2,
+        "title": "Liquidation Warnings",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "rate(liquidation_warnings_total[5m])",
+            "legendFormat": "{{severity}}"
+          }
+        ],
+        "gridPos": { "h": 8, "w": 12, "x": 12, "y": 0 }
+      },
+      {
+        "id": 3,
+        "title": "Circuit Breaker Triggers",
+        "type": "table",
+        "targets": [
+          {
+            "expr": "circuit_breaker_triggered_total",
+            "format": "table",
+            "instant": true
+          }
+        ],
+        "gridPos": { "h": 8, "w": 12, "x": 0, "y": 8 }
+      },
+      {
+        "id": 4,
+        "title": "Slippage Distribution",
+        "type": "heatmap",
+        "targets": [
+          {
+            "expr": "rate(slippage_percent_bucket[5m])",
+            "format": "heatmap",
+            "legendFormat": "{{le}}"
+          }
+        ],
+        "gridPos": { "h": 8, "w": 12, "x": 12, "y": 8 }
+      },
+      {
+        "id": 5,
+        "title": "Compliance Violations",
+        "type": "stat",
+        "targets": [
+          {
+            "expr": "sum(compliance_violations_total)"
+          }
+        ],
+        "gridPos": { "h": 4, "w": 6, "x": 0, "y": 16 },
+        "thresholds": {
+          "mode": "absolute",
+          "steps": [
+            { "color": "green", "value": null },
+            { "color": "yellow", "value": 1 },
+            { "color": "red", "value": 5 }
+          ]
+        }
+      },
+      {
+        "id": 6,
+        "title": "AML Flags (24h)",
+        "type": "stat",
+        "targets": [
+          {
+            "expr": "sum(increase(aml_flags_total[24h]))"
+          }
+        ],
+        "gridPos": { "h": 4, "w": 6, "x": 6, "y": 16 },
+        "thresholds": {
+          "mode": "absolute",
+          "steps": [
+            { "color": "green", "value": null },
+            { "color": "orange", "value": 1 },
+            { "color": "red", "value": 10 }
+          ]
+        }
+      },
+      {
+        "id": 7,
+        "title": "Position Limit Violations",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "rate(position_limit_violations_total[5m])",
+            "legendFormat": "{{symbol}}"
+          }
+        ],
+        "gridPos": { "h": 4, "w": 12, "x": 12, "y": 16 }
+      },
+      {
+        "id": 8,
+        "title": "Risk Score Distribution",
+        "type": "bargauge",
+        "targets": [
+          {
+            "expr": "user_risk_score",
+            "legendFormat": "Risk Score"
+          }
+        ],
+        "gridPos": { "h": 8, "w": 24, "x": 0, "y": 20 }
+      }
+    ],
+    "refresh": "30s",
+    "time": {
+      "from": "now-6h",
+      "to": "now"
+    }
+  }
+}

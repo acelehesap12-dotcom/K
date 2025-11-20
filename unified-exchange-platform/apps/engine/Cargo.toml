@@ -1,0 +1,36 @@
+[package]
+name = "exchange-engine"
+version = "1.0.0"
+edition = "2021"
+
+[dependencies]
+tokio = { version = "1.35", features = ["full"] }
+async-trait = "0.1"
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+log = "0.4"
+env_logger = "0.11"
+thiserror = "1.0"
+parking_lot = "0.12"
+crossbeam = "0.8"
+lmax-disruptor = "0.3"
+rdma = { version = "0.1", optional = true }
+pcap = { version = "0.1", optional = true }
+kafka = "0.9"
+avro-rs = "0.13"
+
+[[bin]]
+name = "engine"
+path = "src/main.rs"
+
+[features]
+default = ["lmax"]
+lmax = []
+dpdk = ["rdma"]
+pcap = ["pcap"]
+
+[profile.release]
+opt-level = 3
+lto = true
+codegen-units = 1
+strip = true

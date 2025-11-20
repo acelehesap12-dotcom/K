@@ -1,0 +1,12 @@
+{
+  "type": "record",
+  "namespace": "com.kk99.exchange",
+  "name": "UserCreated",
+  "fields": [
+    {"name": "userId", "type": "string"},
+    {"name": "email", "type": "string"},
+    {"name": "username", "type": "string"},
+    {"name": "kycStatus", "type": "string"},
+    {"name": "createdAt", "type": "long"}
+  ]
+}

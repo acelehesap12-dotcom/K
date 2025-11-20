@@ -1,0 +1,159 @@
+{
+  "dashboard": {
+    "title": "KK99 Exchange - Revenue & Analytics",
+    "tags": ["kk99", "revenue", "business"],
+    "timezone": "browser",
+    "panels": [
+      {
+        "id": 1,
+        "title": "Trading Volume (USD)",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "sum(rate(trade_volume_usd[1h])) * 3600",
+            "legendFormat": "Hourly Volume"
+          }
+        ],
+        "gridPos": { "h": 8, "w": 12, "x": 0, "y": 0 }
+      },
+      {
+        "id": 2,
+        "title": "Fee Revenue",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "sum(rate(fees_collected_usd[1h])) * 3600",
+            "legendFormat": "Maker Fees"
+          },
+          {
+            "expr": "sum(rate(taker_fees_collected_usd[1h])) * 3600",
+            "legendFormat": "Taker Fees"
+          }
+        ],
+        "gridPos": { "h": 8, "w": 12, "x": 12, "y": 0 }
+      },
+      {
+        "id": 3,
+        "title": "User Tier Distribution",
+        "type": "piechart",
+        "targets": [
+          {
+            "expr": "sum by (tier) (user_tier_count)",
+            "legendFormat": "{{tier}}"
+          }
+        ],
+        "gridPos": { "h": 8, "w": 8, "x": 0, "y": 8 }
+      },
+      {
+        "id": 4,
+        "title": "KK99 Token Holdings",
+        "type": "stat",
+        "targets": [
+          {
+            "expr": "kk99_total_balance_sum"
+          }
+        ],
+        "gridPos": { "h": 4, "w": 8, "x": 8, "y": 8 }
+      },
+      {
+        "id": 5,
+        "title": "New User Registrations (24h)",
+        "type": "stat",
+        "targets": [
+          {
+            "expr": "sum(increase(user_registrations_total[24h]))"
+          }
+        ],
+        "gridPos": { "h": 4, "w": 8, "x": 16, "y": 8 }
+      },
+      {
+        "id": 6,
+        "title": "Deposits Received",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "sum by (chain) (rate(deposits_received_total[5m]))",
+            "legendFormat": "{{chain}}"
+          }
+        ],
+        "gridPos": { "h": 8, "w": 12, "x": 0, "y": 12 }
+      },
+      {
+        "id": 7,
+        "title": "Withdrawals Processed",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "sum by (chain) (rate(withdrawals_processed_total[5m]))",
+            "legendFormat": "{{chain}}"
+          }
+        ],
+        "gridPos": { "h": 8, "w": 12, "x": 12, "y": 12 }
+      },
+      {
+        "id": 8,
+        "title": "Revenue Today",
+        "type": "stat",
+        "targets": [
+          {
+            "expr": "sum(increase(fees_collected_usd[24h]))"
+          }
+        ],
+        "gridPos": { "h": 4, "w": 6, "x": 0, "y": 20 },
+        "fieldConfig": {
+          "defaults": {
+            "unit": "currencyUSD"
+          }
+        }
+      },
+      {
+        "id": 9,
+        "title": "Volume Today",
+        "type": "stat",
+        "targets": [
+          {
+            "expr": "sum(increase(trade_volume_usd[24h]))"
+          }
+        ],
+        "gridPos": { "h": 4, "w": 6, "x": 6, "y": 20 },
+        "fieldConfig": {
+          "defaults": {
+            "unit": "currencyUSD"
+          }
+        }
+      },
+      {
+        "id": 10,
+        "title": "Active Traders (24h)",
+        "type": "stat",
+        "targets": [
+          {
+            "expr": "count(count by (user_id) (orders_created_total))"
+          }
+        ],
+        "gridPos": { "h": 4, "w": 6, "x": 12, "y": 20 }
+      },
+      {
+        "id": 11,
+        "title": "Average Order Size",
+        "type": "stat",
+        "targets": [
+          {
+            "expr": "sum(trade_volume_usd) / sum(trades_executed_total)"
+          }
+        ],
+        "gridPos": { "h": 4, "w": 6, "x": 18, "y": 20 },
+        "fieldConfig": {
+          "defaults": {
+            "unit": "currencyUSD"
+          }
+        }
+      }
+    ],
+    "refresh": "1m",
+    "time": {
+      "from": "now-24h",
+      "to": "now"
+    }
+  }
+}

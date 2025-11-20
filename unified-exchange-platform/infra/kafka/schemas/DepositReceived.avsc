@@ -1,0 +1,15 @@
+{
+  "type": "record",
+  "namespace": "com.kk99.exchange",
+  "name": "DepositReceived",
+  "fields": [
+    {"name": "depositId", "type": "string"},
+    {"name": "userId", "type": "string"},
+    {"name": "chain", "type": "string"},
+    {"name": "transactionHash", "type": "string"},
+    {"name": "amount", "type": "double"},
+    {"name": "kk99Amount", "type": "double"},
+    {"name": "status", "type": "string"},
+    {"name": "timestamp", "type": "long"}
+  ]
+}

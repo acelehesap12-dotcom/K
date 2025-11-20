@@ -1,0 +1,42 @@
+{
+  "name": "unified-exchange-platform",
+  "version": "1.0.0",
+  "description": "Hyperscale Unified Exchange Platform - Kripto, Forex, Hisse, Tahvil, ETF, Emtia, Opsiyon, Vadeli İşlemler",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=20.0.0",
+    "npm": ">=10.0.0"
+  },
+  "workspaces": [
+    "apps/backend",
+    "apps/web",
+    "services/*"
+  ],
+  "scripts": {
+    "dev": "concurrently \"npm run dev -w apps/backend\" \"npm run dev -w apps/web\" \"npm run dev -w services/market-surveillance\"",
+    "dev:backend": "npm run dev -w apps/backend",
+    "dev:web": "npm run dev -w apps/web",
+    "dev:engine": "cd apps/engine && cargo run --release",
+    "build": "turbo run build",
+    "build:docker": "docker-compose build",
+    "start": "turbo run start",
+    "test": "turbo run test",
+    "lint": "turbo run lint",
+    "format": "turbo run format",
+    "k8s:up": "kubectl apply -f infra/kubernetes/",
+    "k8s:down": "kubectl delete -f infra/kubernetes/",
+    "vault:init": "vault operator init",
+    "vault:unseal": "vault operator unseal",
+    "gen:docs": "turbo run gen:docs",
+    "clean": "turbo run clean && rm -rf node_modules"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2",
+    "turbo": "^1.10.16",
+    "vitest": "^1.1.0",
+    "@vitest/ui": "^1.1.0",
+    "@vitest/coverage-v8": "^1.1.0"
+  },
+  "packageManager": "pnpm@9.0.0"
+}

@@ -1,0 +1,23 @@
+{
+  "name": "@kk99/market-surveillance",
+  "version": "1.0.0",
+  "description": "AI-powered Market Surveillance and Anomaly Detection",
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "build": "tsc",
+    "start": "node dist/index.js"
+  },
+  "dependencies": {
+    "fastify": "^4.25.2",
+    "kafkajs": "^2.2.4",
+    "axios": "^1.6.2",
+    "elasticsearch": "^7.17.9",
+    "dotenv": "^16.3.1",
+    "pino": "^8.17.2"
+  },
+  "devDependencies": {
+    "typescript": "^5.3.3",
+    "tsx": "^4.7.0"
+  }
+}

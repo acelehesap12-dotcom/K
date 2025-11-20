@@ -1,0 +1,19 @@
+{
+  "type": "record",
+  "namespace": "com.kk99.exchange",
+  "name": "MarketData",
+  "fields": [
+    {"name": "timestamp", "type": "long"},
+    {"name": "symbol", "type": "string"},
+    {"name": "assetClass", "type": "string"},
+    {"name": "open", "type": "double"},
+    {"name": "high", "type": "double"},
+    {"name": "low", "type": "double"},
+    {"name": "close", "type": "double"},
+    {"name": "volume", "type": "double"},
+    {"name": "bid", "type": "double"},
+    {"name": "ask", "type": "double"},
+    {"name": "bidSize", "type": "double"},
+    {"name": "askSize", "type": "double"}
+  ]
+}
